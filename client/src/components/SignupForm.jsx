@@ -32,8 +32,8 @@ function SignupForm() {
   
       // Redirect to login page after successful signup
       if (response.status === 201) {
-        alert('CodeGuardian says: Signup successful! Redirecting to Loginpage...');
-        navigate('/login');
+        alert('CodeGuardian says: Signup successful! Redirecting to Homepage...');
+        navigate('/home');
       } else {
         alert('CodeGuardian says: Unexpected response from the server.');
       }
