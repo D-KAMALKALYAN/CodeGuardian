@@ -10,7 +10,7 @@ const ScanForm = ({ onScanResults }) => {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await axios.post('/api/scan', { url, vulnerabilities });
+    const response = await axios.post(`${API_BASE_URL}/api/scan`, { url, vulnerabilities });
     onScanResults(response.data);
   };
 

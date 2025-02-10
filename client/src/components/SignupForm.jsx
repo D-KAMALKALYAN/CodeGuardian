@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, CircularProgress, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_BASE_URL from "./config";
 
 function SignupForm() {
   const [formData, setFormData] = useState({
@@ -50,7 +51,7 @@ function SignupForm() {
     setServerError(null);
 
     try {
-      const response = await axios.post('/api/auth/signup', formData);
+      const response = await axios.post(`${API_BASE_URL}/api/auth/signup`, formData);
 
       if (response.status === 201) {
         localStorage.setItem('token', response.data.token);
@@ -85,7 +86,7 @@ function SignupForm() {
       )}
 
       <TextField
-        label="Full Name"
+        label="Full Name *"
         name="fullName"
         value={formData.fullName}
         onChange={handleChange}
@@ -93,10 +94,10 @@ function SignupForm() {
         helperText={errors.fullName}
         fullWidth
         margin="normal"
-        required
+        // required
       />
       <TextField
-        label="Email"
+        label="Email *"
         name="email"
         type="email"
         value={formData.email}
@@ -105,10 +106,10 @@ function SignupForm() {
         helperText={errors.email}
         fullWidth
         margin="normal"
-        required
+        // required
       />
       <TextField
-        label="Password"
+        label="Password *"
         name="password"
         type="password"
         value={formData.password}
@@ -117,10 +118,10 @@ function SignupForm() {
         helperText={errors.password}
         fullWidth
         margin="normal"
-        required
+        // required
       />
       <TextField
-        label="Confirm Password"
+        label="Confirm Password *"
         name="confirmPassword"
         type="password"
         value={formData.confirmPassword}
@@ -129,7 +130,7 @@ function SignupForm() {
         helperText={errors.confirmPassword}
         fullWidth
         margin="normal"
-        required
+        // required
       />
 
       <Button

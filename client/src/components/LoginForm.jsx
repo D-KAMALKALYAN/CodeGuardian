@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_BASE_URL from "./config";
 
 function LoginForm() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -34,7 +35,7 @@ function LoginForm() {
 
     setLoading(true);
     try {
-      const response = await axios.post('/api/auth/login', formData);
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, formData);
       localStorage.setItem('token', response.data.token);
       alert('Login successful! Redirecting to homepage...');
       navigate('/home');
