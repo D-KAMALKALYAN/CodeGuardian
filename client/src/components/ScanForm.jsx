@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import API_BASE_URL from "../config/config";
 
 const ScanForm = ({ onScanResults }) => {
   const [url, setUrl] = useState('');

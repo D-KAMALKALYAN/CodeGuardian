@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import API_BASE_URL from "./config";
+import API_BASE_URL from "../config/config";
 
 function LoginForm() {
   const [formData, setFormData] = useState({ email: '', password: '' });
