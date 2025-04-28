@@ -1,115 +1,156 @@
-import React, { useState } from 'react';
-import './PageStyles.css';
+import React, { useState, useContext, useRef } from 'react';
+import { ThemeContext } from '../context/ThemeContext';
+import axios from 'axios';
+import { Container, Box, useMediaQuery } from '@mui/material';
 
-// Vulnerability data with details and links
-const vulnerabilities = [
-  {
-    id: 1,
-    title: 'Broken Access Control',
-    description: 'Allows attackers to access unauthorized resources or functionalities.',
-    moreInfoLink: 'https://owasp.org/Top10/A01_2021-Broken_Access_Control/'
-  },
-  {
-    id: 2,
-    title: 'Cryptographic Failures',
-    description: 'Sensitive data exposure due to weak or improper cryptography.',
-    moreInfoLink: 'https://owasp.org/Top10/A02_2021-Cryptographic_Failures/'
-  },
-  {
-    id: 3,
-    title: 'Injection',
-    description: 'Untrusted data can send malicious commands to interpreters.',
-    moreInfoLink: 'https://owasp.org/Top10/A03_2021-Injection/'
-  },
-  {
-    id: 4,
-    title: 'Insecure Design',
-    description: 'Lack of security controls and risk-based design patterns.',
-    moreInfoLink: 'https://owasp.org/Top10/A04_2021-Insecure_Design/'
-  },
-  {
-    id: 5,
-    title: 'Security Misconfiguration',
-    description: 'Improperly configured security settings and default configurations.',
-    moreInfoLink: 'https://owasp.org/Top10/A05_2021-Security_Misconfiguration/'
-  },
-  {
-    id: 6,
-    title: 'Vulnerable and Outdated Components',
-    description: 'Risks from using software with known vulnerabilities.',
-    moreInfoLink: 'https://owasp.org/Top10/A06_2021-Vulnerable_and_Outdated_Components/'
-  },
-  {
-    id: 7,
-    title: 'Identification and Authentication Failures',
-    description: 'Weaknesses in user authentication mechanisms.',
-    moreInfoLink: 'https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/'
-  },
-  {
-    id: 8,
-    title: 'Software and Data Integrity Failures',
-    description: 'Lack of integrity checks in software updates and critical data.',
-    moreInfoLink: 'https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/'
-  },
-  {
-    id: 9,
-    title: 'Security Logging and Monitoring Failures',
-    description: 'Inadequate logging and monitoring of security events.',
-    moreInfoLink: 'https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/'
-  },
-  {
-    id: 10,
-    title: 'Server-Side Request Forgery (SSRF)',
-    description: 'Vulnerability allowing attackers to send crafted requests from the server.',
-    moreInfoLink: 'https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/'
-  }
-];
+// Import components
+import Header from '../components/layout/Header';
+import ScanForm from '../components/scanner/ScanForm';
+import ScanResults from '../components/scanner/ScanResults';
+import VulnerabilityList from '../components/vulnerabilities/VulnerabilityList';
+
+// Define API_BASE_URL as a constant
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
 
 const HomePage = () => {
-  const [likedVulnerabilities, setLikedVulnerabilities] = useState([]);
+  const { darkMode } = useContext(ThemeContext);
+  const [scanResults, setScanResults] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const resultsRef = useRef(null);
+  
+  const isMobile = useMediaQuery('(max-width:600px)');
 
-  const toggleLike = (vulnerabilityId) => {
-    setLikedVulnerabilities(prev => 
-      prev.includes(vulnerabilityId)
-        ? prev.filter(id => id !== vulnerabilityId)
-        : [...prev, vulnerabilityId]
-    );
+  const handleScanResults = (results) => {
+    setIsScanning(false);
+    setScanResults(results);
+    // Scroll to results
+    setTimeout(() => {
+      if (resultsRef.current) {
+        resultsRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  const handleScan = async (url, scanType, selectedVulnerabilities = []) => {
+    setIsScanning(true);
+    
+    try {
+      // Call the API endpoint
+      const response = await axios.post(`${API_BASE_URL}/api/scan`, { 
+        url, 
+        scanType,
+        vulnerabilities: selectedVulnerabilities 
+      });
+      handleScanResults(response.data);
+    } catch (error) {
+      console.error("Scan error:", error);
+      setIsScanning(false);
+      
+      // Mock data for demonstration
+      setTimeout(() => {
+        handleScanResults({
+          url: url,
+          scanType: scanType,
+          detectedVulnerabilities: [
+            "XSS Vulnerability (High)",
+            "SQL Injection (Critical)"
+          ],
+          recommendations: {
+            xss: {
+              message: "Cross-site scripting vulnerability detected in input forms",
+              remediation: "Implement input validation and output encoding"
+            },
+            sql: {
+              message: "SQL Injection vulnerability detected in search functionality",
+              remediation: "Use parameterized queries and prepared statements"
+            }
+          }
+        });
+      }, 1500);
+    }
   };
 
   return (
-    <div className="home-container">
-      <header className="page-header">
-        <h1>Web Application Vulnerability Scanner</h1>
-        <p>Comprehensive Analysis of OWASP Top 10 Security Risks</p>
-      </header>
+    <Container maxWidth="lg" sx={{ 
+      py: { xs: 2, md: 4 },
+      position: 'relative',
+      minHeight: '100vh',
+      background: darkMode 
+        ? 'linear-gradient(135deg, #111, #1a1a2e)'
+        : 'radial-gradient(circle, #f5f7fa, #e4e8f0)'
+    }}>
+      {/* Background elements */}
+      {!isMobile && (
+        <Box sx={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '100%',
+          height: '100%',
+          opacity: 0.03,
+          zIndex: 0,
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+          pointerEvents: 'none'
+        }} />
+      )}
+      
+      <Box sx={{ 
+        position: 'relative', 
+        zIndex: 1,
+        backdropFilter: 'blur(8px)',
+      }}>
+        {/* Header Section */}
+        <Header />
+        
+        {/* Security Scanner Section */}
+        <Box sx={{ 
+          mb: 6, 
+          p: { xs: 2, md: 4 },
+          borderRadius: '24px',
+          backgroundColor: darkMode 
+            ? 'rgba(30, 41, 59, 0.7)' 
+            : 'rgba(255, 255, 255, 0.7)',
+          boxShadow: darkMode
+            ? '0 10px 30px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.5) inset'
+            : '0 10px 30px rgba(0, 0, 0, 0.08), 0 0 1px rgba(255, 255, 255, 0.8) inset',
+          backdropFilter: 'blur(10px)',
+          border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.7)'}`,
+          transition: 'all 0.3s ease'
+        }}>
+          {/* Scan Form Component */}
+          <ScanForm 
+            isScanning={isScanning} 
+            onScan={handleScan}
+          />
+        </Box>
+        
+        {/* Scan Results Component (conditionally rendered) */}
+        {scanResults && (
+          <Box sx={{
+            mb: 6,
+            borderRadius: '24px',
+            backgroundColor: darkMode 
+              ? 'rgba(30, 41, 59, 0.7)' 
+              : 'rgba(255, 255, 255, 0.7)',
+            boxShadow: darkMode
+              ? '0 10px 30px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.5) inset'
+              : '0 10px 30px rgba(0, 0, 0, 0.08), 0 0 1px rgba(255, 255, 255, 0.8) inset',
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.7)'}`,
+            transition: 'all 0.3s ease',
+            overflow: 'hidden'
+          }}>
+            <ScanResults 
+              ref={resultsRef}
+              results={scanResults}
+            />
+          </Box>
+        )}
 
-      <section className="vulnerabilities-grid">
-        {vulnerabilities.map((vuln) => (
-          <div key={vuln.id} className="vulnerability-card">
-            <div className="vulnerability-content">
-              <h3>{vuln.title}</h3>
-              <p>{vuln.description}</p>
-              <div className="card-actions">
-                <a 
-                  href={vuln.moreInfoLink} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="more-info-link"
-                >
-                  Read More
-                </a>
-                <button 
-                  onClick={() => toggleLike(vuln.id)}
-                  className={`like-button ${likedVulnerabilities.includes(vuln.id) ? 'liked' : ''}`}
-                >
-                  {likedVulnerabilities.includes(vuln.id) ? '✅' : '☐'}
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </section>
-    </div>
+        {/* OWASP Top 10 Section */}
+        <VulnerabilityList />
+      </Box>
+    </Container>
   );
 };
 

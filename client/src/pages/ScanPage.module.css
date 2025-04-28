@@ -1,0 +1,12 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.note {
+  font-size: 0.9rem;
+  color: #666;
+}
