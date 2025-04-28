@@ -39,7 +39,7 @@ const NoResultsFound = ({ message = "No results found" }) => {
         
         <Button 
           component={Link} 
-          to="/" 
+          to="/home" 
           variant="contained" 
           color="primary" 
           sx={{ mt: 2 }}

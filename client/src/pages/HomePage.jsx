@@ -1,5 +1,6 @@
 import React, { useState, useContext, useRef } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
+import { HistoryContext } from '../context/HistoryContext'; // Import HistoryContext
 import axios from 'axios';
 import { Container, Box, useMediaQuery } from '@mui/material';
 
@@ -14,6 +15,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:500
 
 const HomePage = () => {
   const { darkMode } = useContext(ThemeContext);
+  const { addScan } = useContext(HistoryContext); // Get addScan from HistoryContext
   const [scanResults, setScanResults] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const resultsRef = useRef(null);
@@ -23,6 +25,22 @@ const HomePage = () => {
   const handleScanResults = (results) => {
     setIsScanning(false);
     setScanResults(results);
+    
+    // Add scan to history
+    console.log('Adding scan to history:', {
+      url: results.url,
+      scanResultsSize: JSON.stringify(results).length
+    });
+    
+    // Call addScan from HistoryContext
+    addScan(results.url, results)
+      .then(savedScan => {
+        console.log('Scan added to history successfully:', savedScan);
+      })
+      .catch(err => {
+        console.error('Failed to add scan to history:', err);
+      });
+    
     // Scroll to results
     setTimeout(() => {
       if (resultsRef.current) {
@@ -32,23 +50,40 @@ const HomePage = () => {
   };
 
   const handleScan = async (url, scanType, selectedVulnerabilities = []) => {
+    console.log('Starting scan with parameters:', { url, scanType, vulnerabilitiesCount: selectedVulnerabilities.length });
     setIsScanning(true);
     
     try {
-      // Call the API endpoint
+      // Get the token from localStorage or wherever you store it after login
+      const token = localStorage.getItem('token'); // Adjust this to match how you store your token
+      console.log('Authenticating with token:', token ? 'Token present' : 'Token missing');
+      
+      // Call the API endpoint with the authorization header
+      console.log('Sending scan request to:', `${API_BASE_URL}/api/scan`);
       const response = await axios.post(`${API_BASE_URL}/api/scan`, { 
         url, 
         scanType,
         vulnerabilities: selectedVulnerabilities 
+      }, {
+        headers: {
+          'x-access-token': token // Include the token in the request header
+        }
       });
+      
+      console.log('Scan API response received:', {
+        status: response.status,
+        dataSize: JSON.stringify(response.data).length
+      });
+      
       handleScanResults(response.data);
     } catch (error) {
-      console.error("Scan error:", error);
+      console.error("Scan error:", error.response?.data || error.message);
       setIsScanning(false);
       
-      // Mock data for demonstration
+      // Your fallback mock data can remain here
+      console.log('Using fallback mock data due to API error');
       setTimeout(() => {
-        handleScanResults({
+        const mockResults = {
           url: url,
           scanType: scanType,
           detectedVulnerabilities: [
@@ -65,7 +100,10 @@ const HomePage = () => {
               remediation: "Use parameterized queries and prepared statements"
             }
           }
-        });
+        };
+        
+        console.log('Providing mock results:', mockResults);
+        handleScanResults(mockResults);
       }, 1500);
     }
   };

@@ -138,8 +138,8 @@ const HistoryPage = () => {
                     <TableCell>
                       {/* Display a brief summary of the scan results */}
                       <Typography variant="body2">
-                        {Object.keys(scan.scanResults).length} vulnerabilities detected
-                      </Typography>
+  {scan.scanResults.scanSummary?.vulnerabilitiesFound || 0} vulnerabilities detected
+</Typography>
                     </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>

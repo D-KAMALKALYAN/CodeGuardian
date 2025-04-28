@@ -51,7 +51,17 @@ export const HistoryProvider = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING' });
       
-      const res = await axios.get('/api/history');
+       // Get token from localStorage or wherever you store it
+    const token = localStorage.getItem('token');
+    
+    // Include token in request headers
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    };
+    
+    const res = await axios.get('/api/history', config);
       
       dispatch({
         type: 'GET_HISTORY',
@@ -66,29 +76,36 @@ export const HistoryProvider = ({ children }) => {
   };
 
   // Add scan to history
-  const addScan = async (url, scanResults) => {
-    const config = {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    };
-
-    try {
-      const res = await axios.post('/api/history', { url, scanResults }, config);
-      
-      dispatch({
-        type: 'ADD_SCAN',
-        payload: res.data
-      });
-      
-      return res.data;
-    } catch (err) {
-      dispatch({
-        type: 'HISTORY_ERROR',
-        payload: err.response?.data.message || 'Failed to add scan'
-      });
+// Add scan to history
+const addScan = async (url, scanResults) => {
+  // Get token from localStorage
+  const token = localStorage.getItem('token');
+  
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // Add the token to the request headers
     }
   };
+
+  try {
+    const res = await axios.post('/api/history', { url, scanResults }, config);
+    
+    dispatch({
+      type: 'ADD_SCAN',
+      payload: res.data
+    });
+    
+    return res.data;
+  } catch (err) {
+    dispatch({
+      type: 'HISTORY_ERROR',
+      payload: err.response?.data.message || 'Failed to add scan'
+    });
+    // Re-throw the error so it can be caught by the calling function
+    throw err;
+  }
+};
 
   // Delete scan from history
   const deleteScan = async (id) => {
