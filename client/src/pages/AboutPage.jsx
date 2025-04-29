@@ -24,6 +24,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import BuildIcon from '@mui/icons-material/Build';
 import SendIcon from '@mui/icons-material/Send';
+import DeveloperSection from './DeveloperSection'; // Import the new component
 
 const AboutPage = () => {
   const { darkMode } = useContext(ThemeContext);
@@ -359,6 +360,9 @@ const AboutPage = () => {
           </Box>
         </Box>
       </Fade>
+
+      {/* Add the Developer Section here */}
+      <DeveloperSection />
 
       <Fade in={true} timeout={1800}>
         <Box 

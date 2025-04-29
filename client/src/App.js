@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import HistoryPage from './pages/HistoryPage';
+import ProfilePage from './components/profile'; // Import the ProfilePage
 import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -25,6 +26,13 @@ function App() {
                 </PrivateRoute>
               }
             />
+
+            <Route path="/profile" element={
+                <PrivateRoute>
+                  <ProfilePage />
+                </PrivateRoute>
+              } />
+
             <Route
               path="/about"
               element={
