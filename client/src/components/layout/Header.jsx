@@ -166,7 +166,7 @@ const Header = () => {
           ? '0 15px 40px rgba(0, 0, 0, 0.4), 0 0 2px rgba(0, 0, 0, 0.6) inset'
           : '0 15px 40px rgba(0, 0, 0, 0.15), 0 0 2px rgba(255, 255, 255, 0.8) inset',
         border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.4)'}`,
-        backdropFilter: 'blur(12px)',
+        backdropFilter: 'none',
         position: 'relative',
         overflow: 'hidden',
         fontFamily: '"Inter", "Roboto", "Helvetica Neue", sans-serif',
@@ -309,7 +309,7 @@ const SecurityPill = ({ icon, label, darkMode }) => (
       ? 'rgba(255, 255, 255, 0.1)' 
       : 'rgba(255, 255, 255, 0.2)',
     border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.35)'}`,
-    backdropFilter: 'blur(4px)',
+    backdropFilter: 'none',
     color: 'white',
     fontSize: '0.85rem',
     fontWeight: 500,

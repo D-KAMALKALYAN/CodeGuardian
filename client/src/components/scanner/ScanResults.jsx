@@ -10,11 +10,8 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import RecommendIcon from '@mui/icons-material/Recommend';
 import LinkIcon from '@mui/icons-material/Link';
 
-// Assuming you have a utility function to generate PDF
-const generatePDF = (results) => {
-  console.log("Generating PDF for:", results);
-  // Implementation would go here
-};
+// Import the enhanced generatePDF function
+import { generatePDFReport } from '../utils/generatePDF';
 
 const ScanResults = forwardRef(({ results }, ref) => {
   const theme = useTheme();
@@ -22,7 +19,8 @@ const ScanResults = forwardRef(({ results }, ref) => {
   
   const handleDownloadPDF = () => {
     if (!results) return;
-    generatePDF(results);
+    // Call the enhanced generatePDF function with the results
+    generatePDFReport(results);
   };
   
   return (
