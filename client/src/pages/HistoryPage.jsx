@@ -80,7 +80,10 @@ const HistoryPage = () => {
     );
   }
 
-  if (scans.length === 0) {
+  // Ensure scans is always an array
+  const scansList = Array.isArray(scans) ? scans : [];
+
+  if (scansList.length === 0) {
     return <NoResultsFound message="No scan history found" />;
   }
 
@@ -110,7 +113,7 @@ const HistoryPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {scans
+              {scansList
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((scan) => (
                   <TableRow key={scan._id} hover>
@@ -138,8 +141,8 @@ const HistoryPage = () => {
                     <TableCell>
                       {/* Display a brief summary of the scan results */}
                       <Typography variant="body2">
-  {scan.scanResults.scanSummary?.vulnerabilitiesFound || 0} vulnerabilities detected
-</Typography>
+                        {(scan.scanResults?.scanSummary?.vulnerabilitiesFound || 0)} vulnerabilities detected
+                      </Typography>
                     </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
@@ -180,7 +183,7 @@ const HistoryPage = () => {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={scans.length}
+          count={scansList.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

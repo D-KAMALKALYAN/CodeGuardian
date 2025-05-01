@@ -33,33 +33,33 @@ exports.getScanById = async (req, res) => {
 
 // Add new scan to history
 exports.addScan = async (req, res) => {
-  console.log('addScan method called with request:', {
-    body: req.body,
-    user: req.user ? req.user.id : 'undefined'
-  });
+  // console.log('addScan method called with request:', {
+  //   body: req.body,
+  //   user: req.user ? req.user.id : 'undefined'
+  // });
 
   const { url, scanResults } = req.body;
-  console.log('Extracted data:', { url, scanResultsLength: scanResults ? scanResults.length : 0 });
+  // console.log('Extracted data:', { url, scanResultsLength: scanResults ? scanResults.length : 0 });
 
   try {
-    console.log('Creating new History document with data:', {
-      userId: req.user.id,
-      url,
-      scanResultsCount: scanResults ? Object.keys(scanResults).length : 0
-    });
+    // console.log('Creating new History document with data:', {
+    //   userId: req.user.id,
+    //   url,
+    //   scanResultsCount: scanResults ? Object.keys(scanResults).length : 0
+    // });
     
     const newScan = new History({
       user: req.user.id,
       url,
       scanResults
     });
-    console.log('New scan object created:', newScan);
+    // console.log('New scan object created:', newScan);
     
-    console.log('Attempting to save scan to database...');
+    // console.log('Attempting to save scan to database...');
     const savedScan = await newScan.save();
-    console.log('Scan saved successfully with ID:', savedScan._id);
+    // console.log('Scan saved successfully with ID:', savedScan._id);
     
-    console.log('Responding with saved scan');
+    // console.log('Responding with saved scan');
     res.json(savedScan);
   } catch (error) {
     console.error('Error saving scan:', {
