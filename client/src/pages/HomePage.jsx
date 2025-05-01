@@ -4,6 +4,8 @@ import { HistoryContext } from '../context/HistoryContext';
 import axios from 'axios';
 import { Container, Box, useMediaQuery } from '@mui/material';
 
+import API_BASE_URL from '../config/config';
+
 // Import components
 import Header from '../components/layout/Header';
 import ScanForm from '../components/scanner/ScanForm';
@@ -11,7 +13,7 @@ import ScanResults from '../components/scanner/ScanResults';
 import VulnerabilityList from '../components/vulnerabilities/VulnerabilityList';
 
 // Define API_BASE_URL as a constant
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+// const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
 
 const HomePage = () => {
   const { darkMode } = useContext(ThemeContext);

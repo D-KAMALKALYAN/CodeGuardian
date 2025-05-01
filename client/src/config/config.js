@@ -3,6 +3,6 @@
 const prod_URL = "https://code-guardian-backend.onrender.com";
 const dev_URL = "http://localhost:5000";    
 
-const API_BASE_URL = dev_URL;
+const API_BASE_URL = prod_URL;
 
 export default API_BASE_URL;
