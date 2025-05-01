@@ -73,6 +73,17 @@ const initializeApp = async () => {
     }));
     
     // API Routes
+
+    app.get('/', (req, res) => {
+      res.status(200).json({ 
+        message: 'CodeGuardian API is running', 
+        documentation: 'Access API endpoints at /api/auth, /api/scan, etc.',
+        healthCheck: '/health'
+      });
+    });
+    
+
+    
     app.use('/api/auth', authRoutes);
     app.use('/api/scan', protect, scanRoutes);
     app.use('/api/report', protect, reportRoutes);
@@ -83,7 +94,8 @@ const initializeApp = async () => {
     app.get('/health', (req, res) => {
       res.status(200).json({ status: 'success', environment: NODE_ENV });
     });
-    
+
+  
     // Handle undefined routes
     app.use(notFound);
     
