@@ -23,7 +23,10 @@ dotenv.config();
 // Set up environment variables
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = process.env.PORT || 5000;
-const FRONTEND_URL = process.env.PROD_FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URLS = [
+  process.env.PROD_FRONTEND_URL,
+  process.env.DEV_FRONTEND_URL,
+].filter(Boolean);
 
 // Configure logging colors
 colors.setTheme({
@@ -68,7 +71,16 @@ const initializeApp = async () => {
     
     // Enable CORS
     app.use(cors({
-      origin: FRONTEND_URL,
+      origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (FRONTEND_URLS.indexOf(origin) !== -1) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       credentials: true,
     }));
     
