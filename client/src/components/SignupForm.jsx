@@ -13,8 +13,7 @@ import {
   Container
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import API_BASE_URL from "../config/config";
+import apiClient, { getErrorMessage } from "../config/apiClient"; // Updated import
 import { ThemeContext } from '../context/ThemeContext';
 import { styled, useTheme } from '@mui/material/styles';
 import PersonIcon from '@mui/icons-material/Person';
@@ -23,7 +22,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import FuturisticAlert from './common/FuturisticAlert'; // Import the new component
+import FuturisticAlert from './common/FuturisticAlert';
 
 // Styled components
 const SignupPaper = styled(Paper)(({ theme }) => ({
@@ -141,8 +140,8 @@ function SignupForm() {
     }
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
     }
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
@@ -180,7 +179,8 @@ function SignupForm() {
 
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/signup`, formData);
+      // Use the centralized apiClient instead of direct axios call
+      const response = await apiClient.post('/api/auth/signup', formData);
 
       if (response.status === 201) {
         localStorage.setItem('token', response.data.token);
@@ -192,16 +192,17 @@ function SignupForm() {
         }, 1500);
       }
     } catch (error) {
-      if (error.response) {
-        if (error.response.status === 409) {
-          showAlert('User already exists. Please log in or use another email.');
-        } else {
-          showAlert(error.response.data.message || 'Signup failed. Try again.');
-        }
+      // Use the centralized error handling helper
+      const errorMessage = getErrorMessage(error);
+      
+      // Special handling for user already exists error (409)
+      if (error.response?.status === 409) {
+        showAlert('User already exists. Please log in or use another email.');
       } else {
-        showAlert('Network error. Please check your connection.');
+        showAlert(errorMessage);
       }
-      console.error('Signup Error:', error);
+      
+      // The apiClient already handles logging
     } finally {
       setLoading(false);
     }
@@ -331,7 +332,7 @@ function SignupForm() {
         </SignupPaper>
       </Fade>
 
-      {/* Use the new FuturisticAlert component */}
+      {/* FuturisticAlert component */}
       <FuturisticAlert
         open={alertOpen}
         message={alertMessage}

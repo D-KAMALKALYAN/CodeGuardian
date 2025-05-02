@@ -1,19 +1,16 @@
 import React, { useState, useContext, useRef } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
 import { HistoryContext } from '../context/HistoryContext';
-import axios from 'axios';
 import { Container, Box, useMediaQuery } from '@mui/material';
 
-import API_BASE_URL from '../config/config';
+// Import API client instead of axios directly
+import apiClient, { isNetworkError, getErrorMessage } from '../config/apiClient';
 
 // Import components
 import Header from '../components/layout/Header';
 import ScanForm from '../components/scanner/ScanForm';
 import ScanResults from '../components/scanner/ScanResults';
 import VulnerabilityList from '../components/vulnerabilities/VulnerabilityList';
-
-// Define API_BASE_URL as a constant
-// const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
 
 const HomePage = () => {
   const { darkMode } = useContext(ThemeContext);
@@ -56,20 +53,12 @@ const HomePage = () => {
     setIsScanning(true);
     
     try {
-      // Get the token from localStorage or wherever you store it after login
-      const token = localStorage.getItem('token');
-      console.log('Authenticating with token:', token ? 'Token present' : 'Token missing');
-      
-      // Call the API endpoint with the authorization header
-      console.log('Sending scan request to:', `${API_BASE_URL}/api/scan`);
-      const response = await axios.post(`${API_BASE_URL}/api/scan`, { 
+      // Using apiClient instead of axios - no need to handle tokens manually
+      console.log('Sending scan request to: /api/scan');
+      const response = await apiClient.post('/api/scan', { 
         url, 
         scanType,
         vulnerabilities: selectedVulnerabilities 
-      }, {
-        headers: {
-          'x-access-token': token
-        }
       });
       
       console.log('Scan API response received:', {
@@ -82,31 +71,62 @@ const HomePage = () => {
       console.error("Scan error:", error.response?.data || error.message);
       setIsScanning(false);
       
-      // Fallback mock data
-      console.log('Using fallback mock data due to API error');
-      setTimeout(() => {
-        const mockResults = {
-          url: url,
-          scanType: scanType,
-          detectedVulnerabilities: [
-            "XSS Vulnerability (High)",
-            "SQL Injection (Critical)"
-          ],
-          recommendations: {
-            xss: {
-              message: "Cross-site scripting vulnerability detected in input forms",
-              remediation: "Implement input validation and output encoding"
-            },
-            sql: {
-              message: "SQL Injection vulnerability detected in search functionality",
-              remediation: "Use parameterized queries and prepared statements"
+      // Check if it's a network error using the helper function
+      if (isNetworkError(error)) {
+        console.log('Network error detected, using fallback mock data');
+        // Fallback mock data
+        setTimeout(() => {
+          const mockResults = {
+            url: url,
+            scanType: scanType,
+            detectedVulnerabilities: [
+              "XSS Vulnerability (High)",
+              "SQL Injection (Critical)"
+            ],
+            recommendations: {
+              xss: {
+                message: "Cross-site scripting vulnerability detected in input forms",
+                remediation: "Implement input validation and output encoding"
+              },
+              sql: {
+                message: "SQL Injection vulnerability detected in search functionality",
+                remediation: "Use parameterized queries and prepared statements"
+              }
             }
-          }
-        };
+          };
+          
+          console.log('Providing mock results:', mockResults);
+          handleScanResults(mockResults);
+        }, 1500);
+      } else {
+        // You could display a more specific error message here using getErrorMessage helper
+        console.log('API error with message:', getErrorMessage(error));
         
-        console.log('Providing mock results:', mockResults);
-        handleScanResults(mockResults);
-      }, 1500);
+        // Still provide fallback data for any error type
+        setTimeout(() => {
+          const mockResults = {
+            url: url,
+            scanType: scanType,
+            detectedVulnerabilities: [
+              "XSS Vulnerability (High)",
+              "SQL Injection (Critical)"
+            ],
+            recommendations: {
+              xss: {
+                message: "Cross-site scripting vulnerability detected in input forms",
+                remediation: "Implement input validation and output encoding"
+              },
+              sql: {
+                message: "SQL Injection vulnerability detected in search functionality",
+                remediation: "Use parameterized queries and prepared statements"
+              }
+            }
+          };
+          
+          console.log('Providing mock results after API error:', mockResults);
+          handleScanResults(mockResults);
+        }, 1500);
+      }
     }
   };
 

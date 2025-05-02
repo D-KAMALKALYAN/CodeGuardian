@@ -7,7 +7,6 @@ import {
   Alert,
   Snackbar
 } from '@mui/material';
-import axios from 'axios';
 
 // Import components
 import ProfileHeader from './ProfileHeader';
@@ -16,6 +15,9 @@ import ContactInfoCard from './ContactInfoCard';
 import AccountInfoCard from './AccountInfoCard';
 import { ProfilePaper } from './StyledComponents';
 import { isValidEmail, isValidWebsite, isValidPhone } from './utils';
+
+// Import API client instead of axios directly
+import apiClient, { getErrorMessage } from '../../config/apiClient';
 
 const ProfilePage = () => {
   const [profileData, setProfileData] = useState(null);
@@ -43,15 +45,9 @@ const ProfilePage = () => {
   const fetchProfileData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-      
-      const response = await axios.get('/api/profile', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Using apiClient instead of axios directly - no need to handle tokens manually
+      const response = await apiClient.get('/api/profile');
       
       console.log('Profile data:', response.data);
       setProfileData(response.data);
@@ -67,9 +63,11 @@ const ProfilePage = () => {
       console.error('Error fetching profile data:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to load profile data',
+        message: getErrorMessage(error), // Using helper for user-friendly messages
         severity: 'error',
       });
+      
+      // The apiClient will automatically handle 401 errors and redirect to login
     } finally {
       setLoading(false);
     }
@@ -123,11 +121,9 @@ const ProfilePage = () => {
     
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       
-      await axios.put('/api/profile', formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Using apiClient instead of axios directly
+      await apiClient.put('/api/profile', formData);
       
       setProfileData({
         ...profileData,
@@ -144,7 +140,7 @@ const ProfilePage = () => {
       console.error('Error updating profile:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to update profile',
+        message: getErrorMessage(error), // Using helper for user-friendly messages
         severity: 'error',
       });
     } finally {
