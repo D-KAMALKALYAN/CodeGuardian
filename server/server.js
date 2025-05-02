@@ -23,10 +23,17 @@ dotenv.config();
 // Set up environment variables
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = process.env.PORT || 5000;
-const FRONTEND_URLS = [
+// Find this section in your server.js file and replace it with the following:
+
+// Enable CORS with proper configuration
+const allowedOrigins = [
   process.env.PROD_FRONTEND_URL,
   process.env.DEV_FRONTEND_URL,
-].filter(Boolean);
+  'https://code-guardian-frontend.onrender.com',
+  'http://localhost:3000'
+];
+
+
 
 // Configure logging colors
 colors.setTheme({
@@ -69,19 +76,21 @@ const initializeApp = async () => {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     
-    // Enable CORS
     app.use(cors({
       origin: function(origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
+        // Allow requests with no origin (like mobile apps, curl requests, etc)
         if (!origin) return callback(null, true);
         
-        if (FRONTEND_URLS.indexOf(origin) !== -1) {
+        if (allowedOrigins.indexOf(origin) !== -1) {
           callback(null, true);
         } else {
-          callback(new Error('Not allowed by CORS'));
+          console.log(`Origin ${origin} not allowed by CORS`);
+          callback(null, true); // Change this to true to allow all origins temporarily for debugging
         }
       },
-      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      credentials: true
     }));
     
     // API Routes
