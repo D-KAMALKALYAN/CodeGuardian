@@ -53,6 +53,7 @@ const ProfilePage = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
+      console.log('Profile data:', response.data);
       setProfileData(response.data);
       setFormData({
         fullName: response.data.fullName || '',

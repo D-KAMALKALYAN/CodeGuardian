@@ -27,8 +27,10 @@ function App() {
               }
             />
 
-            <Route path="/profile" element={
+            <Route path="/profile" 
+            element={
                 <PrivateRoute>
+                  <Navbar />
                   <ProfilePage />
                 </PrivateRoute>
               } />
@@ -42,9 +44,10 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route path="/history" element={
+            <Route path="/history" 
+            element={
                   <PrivateRoute>
-                    <Navbar /> {/* You might want to add this */}
+                    <Navbar />
                     <HistoryPage />
                   </PrivateRoute>
             } />
