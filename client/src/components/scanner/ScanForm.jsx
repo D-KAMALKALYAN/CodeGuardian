@@ -6,6 +6,8 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import InfoIcon from '@mui/icons-material/Info';
+import CoffeeIcon from '@mui/icons-material/Coffee';
 import SecurityScannerIcon from '@mui/icons-material/SettingsSuggest';
 import CustomScanModal from './CustomScanModal';
 import { scanProfiles, allVulnerabilities } from '../data/vulnerabilitiesData';
@@ -70,6 +72,33 @@ const ScanForm = ({ isScanning, onScan }) => {
     setSelectedVulnerabilities(selectedVulns);
     setOpenCustomModal(false);
   };
+
+  // Alert messages based on scanning state
+  const getAlertContent = () => {
+    if (isScanning) {
+      return {
+        icon: <CoffeeIcon />,
+        severity: "info",
+        message: "Sit back and relax! Have a sip of coffee while we hunt for vulnerabilities. This scan might take a few minutes, please don't close the window.",
+        style: {
+          backgroundColor: 'rgba(25, 118, 210, 0.1)',
+          border: '1px solid rgba(25, 118, 210, 0.3)'
+        }
+      };
+    } else {
+      return {
+        icon: <WarningAmberIcon />,
+        severity: "warning",
+        message: "Please note: Only scan systems you are legally authorized to test.",
+        style: {
+          backgroundColor: 'rgba(255, 152, 0, 0.1)',
+          border: '1px solid rgba(255, 152, 0, 0.3)'
+        }
+      };
+    }
+  };
+
+  const alertContent = getAlertContent();
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -239,22 +268,22 @@ const ScanForm = ({ isScanning, onScan }) => {
           </Box>
         </form>
         
-        <Fade in={true}>
+        <Fade in={true} timeout={isScanning ? 800 : 300}>
           <Alert 
-            severity="warning" 
-            icon={<WarningAmberIcon />}
+            severity={alertContent.severity}
+            icon={alertContent.icon}
             sx={{ 
               width: '100%', 
               borderRadius: '12px',
-              backgroundColor: 'rgba(255, 152, 0, 0.1)',
-              border: '1px solid rgba(255, 152, 0, 0.3)',
+              ...alertContent.style,
               '& .MuiAlert-message': {
                 width: '100%',
                 textAlign: 'center'
-              }
+              },
+              transition: 'all 0.3s ease'
             }}
           >
-            Please note: Only scan systems you are legally authorized to test.
+            {alertContent.message}
           </Alert>
         </Fade>
       </Box>

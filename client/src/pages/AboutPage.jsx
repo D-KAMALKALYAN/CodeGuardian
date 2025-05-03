@@ -32,6 +32,22 @@ const AboutPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
 
+  // Function to scroll to features section
+  const scrollToFeatures = () => {
+    const featuresSection = document.getElementById('features-section');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const scrollToDeveloperSection = () => {
+    const developerSection = document.getElementById('developer-section');
+    if (developerSection) {
+      developerSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+
   const FeatureCard = ({ title, description, icon, index }) => (
     <Grow in={true} timeout={(index + 1) * 300} style={{ transformOrigin: '0 0 0' }}>
       <Card 
@@ -162,6 +178,7 @@ const AboutPage = () => {
               variant="contained" 
               color="secondary" 
               size="large"
+              onClick={scrollToFeatures}
               sx={{ 
                 borderRadius: '30px', 
                 px: 4, 
@@ -173,7 +190,7 @@ const AboutPage = () => {
                 }
               }}
             >
-              Get Started
+              Explore Features
             </Button>
           </Box>
         </Box>
@@ -227,7 +244,7 @@ const AboutPage = () => {
 
       <Divider sx={{ my: 6 }} />
 
-      <Box mb={8}>
+      <Box mb={8} id="features-section">
         <Typography 
           variant="h4" 
           component="h2" 
@@ -331,8 +348,7 @@ const AboutPage = () => {
             }}
           >
             {[
-              'HTML5', 'CSS3', 'React', 'Node.js', 'Express.js', 'MongoDB', 
-              'Python', 'TensorFlow', 'Docker', 'Kubernetes', 'Redis'
+              'MongoDB', 'Express.js', 'React', 'Node.js'
             ].map((tech, index) => (
               <Grow
                 key={tech}
@@ -362,7 +378,7 @@ const AboutPage = () => {
       </Fade>
 
       {/* Add the Developer Section here */}
-      <DeveloperSection />
+      <DeveloperSection id="developer-section" />
 
       <Fade in={true} timeout={1800}>
         <Box 
@@ -387,11 +403,12 @@ const AboutPage = () => {
             Need more information about web application security? 
             Our team of security experts is ready to help you secure your applications.
           </Typography>
-          <Button 
+         <Button 
             variant="contained" 
             color="primary" 
             size="large" 
             endIcon={<SendIcon />}
+            onClick={scrollToDeveloperSection}
             sx={{ borderRadius: '30px', px: 4 }}
           >
             Contact Us

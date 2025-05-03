@@ -80,11 +80,14 @@ exports.deleteScan = async (req, res) => {
     if (!scan) {
       return res.status(404).json({ message: 'Scan not found' });
     }
+    
     // Changed req.user.id to req.user
     if (scan.user.toString() !== req.user.id) {
       return res.status(401).json({ message: 'Not authorized' });
     }
-    await History.findByIdAndRemove(req.params.id);
+    
+    // Use findByIdAndDelete instead of findByIdAndRemove
+    await History.findByIdAndDelete(req.params.id);
     res.json({ message: 'Scan removed from history' });
   } catch (error) {
     console.error('Error deleting scan:', error.message);
