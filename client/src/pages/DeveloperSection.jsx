@@ -160,7 +160,7 @@ const DeveloperSection = () => {
               <Button 
                 variant="outlined" 
                 startIcon={<GitHubIcon />}
-                href="https://github.com/D-KAMALKALYAN/D-KAMALKALYAN"
+                href="https://github.com/D-KAMALKALYAN"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{ 
