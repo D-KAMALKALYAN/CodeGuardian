@@ -2,7 +2,7 @@
  * Global API Client
  * 
  * A centralized API client with proper error handling,
- * authentication, and logging capabilities.
+ * authentication, token refresh, and logging capabilities.
  */
 
 import axios from 'axios';
@@ -17,15 +17,35 @@ const apiClient = axios.create({
   }
 });
 
+/**
+ * Validates if a token looks like a proper JWT
+ * @param {string} token - The token to validate
+ * @returns {boolean} True if the token looks valid
+ */
+export const isValidTokenFormat = (token) => {
+  // Basic check: JWT should have 3 parts separated by dots
+  // and be a non-empty string
+  if (!token || typeof token !== 'string') return false;
+  
+  const parts = token.split('.');
+  return parts.length === 3;
+};
+
+
 // Request interceptor - adds auth token and handles request preparation
 apiClient.interceptors.request.use(
   (config) => {
     // Get auth token
     const token = localStorage.getItem('token');
     
-    // Only add token if it exists
-    if (token) {
+    // Only add token if it exists AND has valid format
+    if (token && isValidTokenFormat(token)) {
       config.headers['Authorization'] = `Bearer ${token}`;
+    } else if (token && !isValidTokenFormat(token)) {
+      // If token exists but is invalid, remove it
+      console.warn('[API] Malformed token detected and removed');
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
     }
     
     // Log requests in development
@@ -51,7 +71,7 @@ apiClient.interceptors.response.use(
     
     return response;
   },
-  (error) => {
+  async (error) => {
     // Extract error details
     const errorResponse = {
       status: error.response?.status,
@@ -60,6 +80,8 @@ apiClient.interceptors.response.use(
       method: error.config?.method?.toUpperCase(),
     };
     
+    const originalRequest = error.config;
+    
     // Special handling for common errors
     if (error.response) {
       // Server responded with error status
@@ -67,14 +89,62 @@ apiClient.interceptors.response.use(
         case 401: // Unauthorized - token expired or invalid
           console.error('[API] Authentication error - invalid or expired token');
           
-          // Clear invalid token
-          localStorage.removeItem('token');
-          
-          // Redirect to login if not already there
-          if (window.location.pathname !== '/login') {
-            // Store the current path to redirect back after login
-            localStorage.setItem('redirectAfterLogin', window.location.pathname);
-            window.location.href = '/login';
+          // Attempt to refresh token if not already tried
+          if (!originalRequest._retry) {
+            originalRequest._retry = true;
+            
+            try {
+              // Attempt to refresh the token
+              // This assumes you have a refreshToken endpoint and refreshToken in storage
+              const refreshToken = localStorage.getItem('refreshToken');
+              
+              if (refreshToken) {
+                // Create a new instance to avoid interceptors
+                const refreshResponse = await axios.post(
+                  `${API_BASE_URL}/auth/refresh`, 
+                  { refreshToken }
+                );
+                
+                if (refreshResponse.data.token) {
+                  // Store the new token
+                  localStorage.setItem('token', refreshResponse.data.token);
+                  if (refreshResponse.data.refreshToken) {
+                    localStorage.setItem('refreshToken', refreshResponse.data.refreshToken);
+                  }
+                  
+                  // Update the failed request with new token and retry
+                  originalRequest.headers['Authorization'] = `Bearer ${refreshResponse.data.token}`;
+                  return axios(originalRequest);
+                }
+              }
+              
+              // If we reach here, refresh failed or wasn't possible
+              throw new Error('Token refresh failed');
+            } catch (refreshError) {
+              console.error('[API] Token refresh failed:', refreshError);
+              
+              // Clear invalid tokens
+              localStorage.removeItem('token');
+              localStorage.removeItem('refreshToken');
+              
+              // Redirect to login if not already there
+              if (window.location.pathname !== '/login') {
+                // Store the current path to redirect back after login
+                localStorage.setItem('redirectAfterLogin', window.location.pathname);
+                window.location.href = '/login';
+              }
+            }
+          } else {
+            // Clear invalid token if refresh already attempted
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            
+            // Redirect to login if not already there
+            if (window.location.pathname !== '/login') {
+              // Store the current path to redirect back after login
+              localStorage.setItem('redirectAfterLogin', window.location.pathname);
+              window.location.href = '/login';
+            }
           }
           break;
           
@@ -84,6 +154,20 @@ apiClient.interceptors.response.use(
           
         case 404: // Not found
           console.error(`[API] Resource not found: ${errorResponse.url}`);
+          
+          // Special handling for auth/user route - treat as auth error
+          if (error.config?.url?.includes('/api/auth/user')) {
+            console.warn('[API] User authentication endpoint not found - treating as auth error');
+            // Clear token since we can't validate it
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            
+            // Redirect to login if not already there
+            if (window.location.pathname !== '/login') {
+              localStorage.setItem('redirectAfterLogin', window.location.pathname);
+              window.location.href = '/login';
+            }
+          }
           break;
           
         case 500: // Server error
@@ -119,7 +203,7 @@ apiClient.interceptors.response.use(
  * @returns {boolean} True if it's a network error
  */
 export const isNetworkError = (error) => {
-  return error.message === 'Network Error' || !error.response;
+  return !error.response && (error.message === 'Network Error' || error.message.includes('Network Error'));
 };
 
 /**
@@ -151,6 +235,10 @@ export const getErrorMessage = (error) => {
     case 403:
       return 'You do not have permission to perform this action.';
     case 404:
+      // Check if it's specifically the /api/auth/user endpoint
+      if (error.config?.url?.includes('/api/auth/user')) {
+        return 'Unable to retrieve user information. Please login again.';
+      }
       return 'The requested resource was not found.';
     case 500:
     case 502:
@@ -158,7 +246,7 @@ export const getErrorMessage = (error) => {
     case 504:
       return 'Server error. Please try again later.';
     default:
-      return 'An unexpected error occurred. Please try again.';
+      return error.message || 'An unexpected error occurred. Please try again.';
   }
 };
 

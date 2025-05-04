@@ -8,8 +8,9 @@ const asyncHandler = require('express-async-handler');
  * @access  Private
  */
 exports.getProfile = asyncHandler(async (req, res) => {
+  console.log('Fetching profile for user', req.user);
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.userId).select('-password');
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });

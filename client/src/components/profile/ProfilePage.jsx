@@ -46,6 +46,8 @@ const ProfilePage = () => {
     try {
       setLoading(true);
       
+      const token = localStorage.getItem('token');
+      console.log('Fetching profile with token:', token ? `${token.substring(0, 15)}...` : 'No token');
       // Using apiClient instead of axios directly - no need to handle tokens manually
       const response = await apiClient.get('/api/profile');
       

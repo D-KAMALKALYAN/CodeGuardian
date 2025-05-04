@@ -13,18 +13,17 @@ import {
   Container
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import API_BASE_URL from "../config/config";
 import { ThemeContext } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext'; // Import the useAuth hook
 import { styled, useTheme } from '@mui/material/styles';
 import EmailIcon from '@mui/icons-material/Email';
 import LockIcon from '@mui/icons-material/Lock';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import LoginIcon from '@mui/icons-material/Login';
-import FuturisticAlert from './common/FuturisticAlert'; // Import the new component
+import FuturisticAlert from './common/FuturisticAlert';
 
-// Styled components remain the same
+// Styled components remain the same...
 const LoginPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
   borderRadius: 16,
@@ -111,7 +110,6 @@ const Title = styled(Typography)(({ theme }) => ({
 
 function LoginForm() {
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
@@ -121,6 +119,7 @@ function LoginForm() {
   const navigate = useNavigate();
   const theme = useTheme();
   const { darkMode } = useContext(ThemeContext);
+  const { login, isLoading } = useAuth(); // Use the auth context
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const validateInputs = () => {
@@ -160,22 +159,18 @@ function LoginForm() {
     e.preventDefault();
     if (!validateInputs()) return;
 
-    setLoading(true);
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, formData);
-      localStorage.setItem('token', response.data.token);
+    // Use the login function from AuthContext
+    const result = await login(formData.email, formData.password);
+    
+    if (result.success) {
       showAlert('Login successful! Redirecting to homepage...', 'success');
       
       // Delay navigation slightly for smooth animation
       setTimeout(() => {
         navigate('/home');
       }, 1500);
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Invalid email or password';
-      showAlert(errorMessage);
-      console.error('Login Error:', error);
-    } finally {
-      setLoading(false);
+    } else {
+      showAlert(result.message || 'Invalid email or password');
     }
   };
 
@@ -243,11 +238,11 @@ function LoginForm() {
               type="submit"
               variant="contained"
               fullWidth
-              disabled={loading}
+              disabled={isLoading}
               sx={{ mt: 4, mb: 2 }}
-              startIcon={loading ? null : <LoginIcon />}
+              startIcon={isLoading ? null : <LoginIcon />}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+              {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
             </LoginButton>
             
             <Box sx={{ textAlign: 'center', mt: 2 }}>
@@ -267,7 +262,6 @@ function LoginForm() {
         </LoginPaper>
       </Fade>
 
-      {/* Use the new FuturisticAlert component */}
       <FuturisticAlert
         open={alertOpen}
         message={alertMessage}

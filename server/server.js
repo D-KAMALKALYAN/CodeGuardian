@@ -109,7 +109,7 @@ const initializeApp = async () => {
     app.use('/api/scan', protect, scanRoutes);
     app.use('/api/report', protect, reportRoutes);
     app.use('/api/history', protect, historyRoutes);
-    app.use('/api/profile', protect, profileRoutes);
+    app.use('/api/profile', profileRoutes);
     
     // Health check endpoint
     app.get('/health', (req, res) => {

@@ -23,6 +23,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import FuturisticAlert from './common/FuturisticAlert';
+import { isValidTokenFormat } from '../utils/authUtils';
 
 // Styled components
 const SignupPaper = styled(Paper)(({ theme }) => ({
@@ -176,20 +177,34 @@ function SignupForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateInputs()) return;
-
+  
     setLoading(true);
     try {
       // Use the centralized apiClient instead of direct axios call
       const response = await apiClient.post('/api/auth/signup', formData);
-
+  
       if (response.status === 201) {
-        localStorage.setItem('token', response.data.token);
-        showAlert('Account created successfully! Redirecting to homepage...', 'success');
-        
-        // Delay navigation slightly for smooth animation
-        setTimeout(() => {
-          navigate('/home');
-        }, 1500);
+        // Check if we received a token in the response
+        if (response.data.token) {
+          // Validate token before storing
+          if (isValidTokenFormat(response.data.token)) {
+            localStorage.setItem('token', response.data.token);
+            showAlert('Account created successfully! Redirecting to homepage...', 'success');
+            
+            // Delay navigation slightly for smooth animation
+            setTimeout(() => {
+              navigate('/home');
+            }, 1500);
+          } else {
+            throw new Error('Invalid token format received from server');
+          }
+        } else {
+          // Handle the case where signup was successful but no token received
+          showAlert('Account created successfully! Please log in.', 'success');
+          setTimeout(() => {
+            navigate('/login');
+          }, 1500);
+        }
       }
     } catch (error) {
       // Use the centralized error handling helper
@@ -201,12 +216,11 @@ function SignupForm() {
       } else {
         showAlert(errorMessage);
       }
-      
-      // The apiClient already handles logging
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>

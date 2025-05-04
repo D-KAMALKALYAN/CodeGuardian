@@ -12,7 +12,7 @@ exports.performScan = async (req, res) => {
   // Validate input parameters
   const { url, vulnerabilities } = req.body;
 
-  // console.log('Received scan request:', { url, vulnerabilities });
+  console.log('Received scan request:', { url, vulnerabilities });
   
   if (!url) {
     return res.status(400).json({ 
